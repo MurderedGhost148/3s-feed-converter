@@ -1,6 +1,5 @@
 <?php
 require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/processor/processor.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/xml-serializer.php";
 require_once $_SERVER["DOCUMENT_ROOT"] . "/model/service.php";
 require_once $_SERVER["DOCUMENT_ROOT"] . "/config/mutator-config.php";
 
@@ -28,27 +27,24 @@ class CianProcessor extends Processor {
         $this->write("\n</feed>", $context);
     }
 
-
     protected function processItem(Context $context, $externalId, $type, $xml) : void
     {
+        $dom = new DOMDocument('1.0', 'UTF-8');
+        $dom->loadXML($xml, LIBXML_NOBLANKS | LIBXML_NOEMPTYTAG);
+        $objectNode = $dom->documentElement;
+
+        $externalIdNode = $dom->createElement('ExternalId', htmlspecialchars($externalId));
+        $categoryNode = $dom->createElement('Category', htmlspecialchars($type));
+
+        $objectNode->appendChild($externalIdNode);
+        $objectNode->appendChild($categoryNode);
+
         global $mutators;
-
-        $object = json_decode(
-            json_encode(simplexml_load_string($xml), JSON_UNESCAPED_UNICODE), false
-        );
-        $object->ExternalId = $externalId;
-        $object->Category = $type;
-
-        $mutators->apply($object, $this->getService()->value, $context->getHouse());
-
-        $xml_string = XMLSerializer::Serialize($object, 'object');
-        $object = simplexml_load_string($xml_string, 'SimpleXMLElement', LIBXML_NOXMLDECL);
-        unset($xml_string);
+        $mutators->apply($dom, $this->getService()->value, $context->getHouse());
 
         $this->write(
-            str_replace(
-                '<?xml version="1.0" encoding="UTF-8"?>', '', trim($object->asXML(), "\n")
-            ), $context
+            str_replace('<?xml version="1.0" encoding="UTF-8"?>', '', $dom->saveXML()),
+            $context
         );
     }
 }

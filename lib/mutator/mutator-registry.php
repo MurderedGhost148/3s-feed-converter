@@ -11,7 +11,7 @@ class MutatorRegistry {
         }
     }
 
-    public function apply(object &$object, string $service, string $house): void
+    public function apply(DOMDocument &$object, string $service, string $house): void
     {
         foreach (($this->mutators[$service][""] ?? []) as $callback) {
             $callback($object);

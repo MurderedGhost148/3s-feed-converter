@@ -8,89 +8,116 @@ $mutators = new MutatorRegistry();
 {
     $service = Service::CIAN->value;
 
-    $mutators->add(function(object $object){
-        if(isset($object->BargainTerms->currency)){
-            $object->BargainTerms->Currency = $object->BargainTerms->currency;
+    // 1️⃣ Замена <currency> → <Currency>
+    $mutators->add(function(DOMDocument $doc) {
+        $xpath = new DOMXPath($doc);
 
-            unset($object->BargainTerms->currency);
+        foreach ($xpath->query('//BargainTerms/currency') as $node) {
+            $newNode = $doc->createElement('Currency', $node->nodeValue);
+            $node->parentNode->replaceChild($newNode, $node);
         }
     }, $service, [""]);
 
-    $mutators->add(function(object $object){
-        if((is_object($object->Description) && !empty(get_object_vars($object->Description))) || (!is_object($object->Description) && !empty($object->Description))){
-            $replacements = [
-                'Лес как часть жизни' => '&lt;b&gt;Лес как часть жизни&lt;/b&gt;',
-                'и благоустройстве' => '&lt;b&gt;и благоустройстве&lt;/b&gt;',
-                'Двор – это место отдыха' => '&lt;b&gt;Двор – это место отдыха&lt;/b&gt;',
-                'Главные особенности:' => '&lt;b&gt;Главные особенности:&lt;/b&gt;',
-                'Пространство:' => '&lt;b&gt;Пространство:&lt;/b&gt;',
-                'Природный ландшафт:' => '&lt;b&gt;Природный ландшафт:&lt;/b&gt;',
-                'Игровые и спортивные зоны:' => '&lt;b&gt;Игровые и спортивные зоны:&lt;/b&gt;',
-                'Экологичность и долговечность:' => '&lt;b&gt;Экологичность и долговечность:&lt;/b&gt;',
-                'Безопасность и уединение:' => '&lt;b&gt;Безопасность и уединение:&lt;/b&gt;',
-                'Сохранение времени:' => '&lt;b&gt;Сохранение времени:&lt;/b&gt;',
-                '●	' => '-	'
-            ];
+    // 2️⃣ Замена текста в Description
+    $mutators->add(function(DOMDocument $doc) {
+        $xpath = new DOMXPath($doc);
+        $replacements = [
+            'Лес как часть жизни' => '&lt;b&gt;Лес как часть жизни&lt;/b&gt;',
+            'и благоустройстве' => '&lt;b&gt;и благоустройстве&lt;/b&gt;',
+            'Двор – это место отдыха' => '&lt;b&gt;Двор – это место отдыха&lt;/b&gt;',
+            'Главные особенности:' => '&lt;b&gt;Главные особенности:&lt;/b&gt;',
+            'Пространство:' => '&lt;b&gt;Пространство:&lt;/b&gt;',
+            'Природный ландшафт:' => '&lt;b&gt;Природный ландшафт:&lt;/b&gt;',
+            'Игровые и спортивные зоны:' => '&lt;b&gt;Игровые и спортивные зоны:&lt;/b&gt;',
+            'Экологичность и долговечность:' => '&lt;b&gt;Экологичность и долговечность:&lt;/b&gt;',
+            'Безопасность и уединение:' => '&lt;b&gt;Безопасность и уединение:&lt;/b&gt;',
+            'Сохранение времени:' => '&lt;b&gt;Сохранение времени&lt;/b&gt;',
+            '●	' => '-	'
+        ];
 
+        foreach ($xpath->query('//Description') as $descNode) {
+            $text = $descNode->textContent;
             foreach ($replacements as $search => $replace) {
-                $object->Description = preg_replace("/$search/", $replace, $object->Description);
+                $text = preg_replace("/$search/u", $replace, $text);
             }
+            // Перезаписываем контент как CDATA
+            while ($descNode->firstChild) {
+                $descNode->removeChild($descNode->firstChild);
+            }
+            $descNode->appendChild($doc->createCDATASection($text));
         }
     }, $service, [""]);
 
-    $mutators->add(function(object $object){
-        $object->BargainTerms->MortgageAllowed = true;
+    // 3️⃣ Добавление MortgageAllowed = true
+    $mutators->add(function(DOMDocument $doc) {
+        $xpath = new DOMXPath($doc);
+        foreach ($xpath->query('//BargainTerms') as $node) {
+            $mortgageNode = $doc->createElement('MortgageAllowed', 'true');
+            $node->appendChild($mortgageNode);
+        }
     }, $service, [House::NG->value]);
 
-    $mutators->add(function(object $object){
-        if (isset($object->Photos)) {
-            if (isset($object->Photos->PhotoSchema)) {
-                if (is_array($object->Photos->PhotoSchema)) {
-                    $presetImages = [];
-                    $otherImages = [];
+    // 4️⃣ Работа с Photos / LayoutPhoto
+    $mutators->add(function(DOMDocument $doc) {
+        $xpath = new DOMXPath($doc);
+        foreach ($xpath->query('//Photos') as $photosNode) {
+            $photoNodes = iterator_to_array($xpath->query('.//PhotoSchema', $photosNode));
+            if (empty($photoNodes)) {
+                continue;
+            }
 
-                    foreach ($object->Photos->PhotoSchema as $schema) {
-                        if(isset($schema->FullUrl)) {
-                            if(str_contains($schema->FullUrl, '/uploads/preset/')) {
-                                $presetImages[] = $schema;
-                            } else {
-                                if(!str_contains($schema->FullUrl, '/uploads/layout/')) {
-                                    $otherImages[] = $schema;
-                                }
-                            }
-                        }
-                    }
+            $presetImages = [];
+            $otherImages = [];
 
-                    // Если есть хотя бы одна фотография с папкой "preset"
-                    if (!empty($presetImages)) {
-                        $lastPresetImage = array_pop($presetImages); // Последняя фотография среди всех фотографий с папкой "preset"
+            foreach ($photoNodes as $photoNode) {
+                $fullUrlNode = $photoNode->getElementsByTagName('FullUrl')->item(0);
+                if (!$fullUrlNode) continue;
 
-                        // Если фотографий с папкой "preset" больше одной
-                        $count = ($presetImages);
-                        if ($count >= 1) {
-                            $secondLastPresetImage = array_pop($presetImages); // Предпоследняя фотография с папкой "preset"
+                $url = $fullUrlNode->textContent;
 
-                            if(str_ends_with($secondLastPresetImage->FullUrl, '.jpg')){
-                                array_unshift($otherImages, $lastPresetImage); // Добавляем предпоследнюю фотографию с папкой "preset" в начало массива
-                                $lastPresetImage = clone $secondLastPresetImage;
-                            }
-                        }
+                if (str_contains($url, '/uploads/preset/')) {
+                    $presetImages[] = $photoNode;
+                } elseif (!str_contains($url, '/uploads/layout/')) {
+                    $otherImages[] = $photoNode;
+                }
+            }
 
-                        $object->LayoutPhoto = $lastPresetImage;
-                    } else {
-                        // Если нет фотографий с папкой "preset", выбираем последнюю фотографию среди всех фото и устанавливаем её в LayoutPhoto
-                        $lastPhoto = end($otherImages);
-                        $object->LayoutPhoto = clone $lastPhoto;
-                    }
+            $layoutPhoto = null;
 
-                    // Обновляем свойство Photos
-                    $object->Photos->PhotoSchema = $otherImages;
-                } else {
-                    // Если PhotoSchema не является массивом, проверяем и используем единственную фотографию, если она является планировкой
-                    if (isset($object->Photos->PhotoSchema->FullUrl) && str_contains($object->Photos->PhotoSchema->FullUrl, '/uploads/preset/')) {
-                        $object->LayoutPhoto = clone $object->Photos->PhotoSchema;
+            if (!empty($presetImages)) {
+                $lastPreset = array_pop($presetImages);
+                if (count($presetImages) >= 1) {
+                    $secondLast = array_pop($presetImages);
+                    $url = $secondLast->getElementsByTagName('FullUrl')->item(0)?->textContent;
+                    if ($url && str_ends_with($url, '.jpg')) {
+                        array_unshift($otherImages, $lastPreset);
+                        $lastPreset = $secondLast;
                     }
                 }
+                $layoutPhoto = $lastPreset;
+            } else {
+                $layoutPhoto = end($otherImages);
+            }
+
+            if ($layoutPhoto) {
+                $layoutPhotoClone = $layoutPhoto->cloneNode(true);
+
+                foreach ($xpath->query('../LayoutPhoto', $photosNode->parentNode) as $old) {
+                    $old->parentNode->removeChild($old);
+                }
+
+                $layoutNode = $doc->createElement('LayoutPhoto');
+                foreach ($layoutPhotoClone->childNodes as $child) {
+                    $layoutNode->appendChild($child->cloneNode(true));
+                }
+                $photosNode->parentNode->appendChild($layoutNode);
+            }
+
+            while ($photosNode->hasChildNodes()) {
+                $photosNode->removeChild($photosNode->firstChild);
+            }
+            foreach ($otherImages as $img) {
+                $photosNode->appendChild($img->cloneNode(true));
             }
         }
     }, $service, [""]);
