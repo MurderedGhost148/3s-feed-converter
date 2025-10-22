@@ -1,8 +1,8 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/processor/processor.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/utils/dom.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/model/service.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/config/mutator-config.php";
+require_once __DIR__ . "/../../../lib/processor/processor.php";
+require_once __DIR__ . "/../../../lib/utils/dom.php";
+require_once __DIR__ . "/../../../model/service.php";
+require_once __DIR__ . "/../../../config/mutator-config.php";
 
 use Processing\Context;
 

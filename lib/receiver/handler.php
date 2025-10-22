@@ -1,6 +1,6 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . "/config/app-config.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/receiver/impl/cian-receiver.php";
+require_once __DIR__ . "/../../config/app-config.php";
+require_once __DIR__ . "/../../lib/receiver/impl/cian-receiver.php";
 
 /**
  * @var array $config

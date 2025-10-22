@@ -1,6 +1,6 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/receiver/receiver.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/model/service.php";
+require_once __DIR__ . "/../../../lib/receiver/receiver.php";
+require_once __DIR__ . "/../../../model/service.php";
 
 use Receiving\Context;
 

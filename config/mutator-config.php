@@ -1,6 +1,6 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/mutator/mutator-registry.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/model/service.php";
+require_once __DIR__ . "/../lib/mutator/mutator-registry.php";
+require_once __DIR__ . "/../model/service.php";
 
 $mutators = new MutatorRegistry();
 
@@ -59,7 +59,7 @@ $mutators = new MutatorRegistry();
 
     // 4️⃣ Работа с Photos / LayoutPhoto
     $mutators->add(function(DOMDocument $doc) {
-        require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/utils/dom.php";
+        require_once __DIR__ . "/../lib/utils/dom.php";
 
         $xpath = new DOMXPath($doc);
         foreach ($xpath->query('//Photos') as $photosNode) {

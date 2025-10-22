@@ -1,10 +1,10 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . "/config/app-config.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/utils/base.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/receiver/context.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/model/exception/receiving-exception.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/model/exception/database-exception.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/model/service.php";
+require_once __DIR__ . "/../../config/app-config.php";
+require_once __DIR__ . "/../../lib/utils/base.php";
+require_once __DIR__ . "/../../lib/receiver/context.php";
+require_once __DIR__ . "/../../model/exception/receiving-exception.php";
+require_once __DIR__ . "/../../model/exception/database-exception.php";
+require_once __DIR__ . "/../../model/service.php";
 
 /**
  * @var array $config

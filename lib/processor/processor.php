@@ -1,8 +1,8 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . "/config/app-config.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/utils/base.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/processor/context.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/model/service.php";
+require_once __DIR__ . "/../../config/app-config.php";
+require_once __DIR__ . "/../../lib/utils/base.php";
+require_once __DIR__ . "/../../lib/processor/context.php";
+require_once __DIR__ . "/../../model/service.php";
 
 /**
  * @var array $config
@@ -87,7 +87,7 @@ abstract class Processor {
 
     private function buildContext(array $task) : Context
     {
-        $FILE_DIR = $_SERVER["DOCUMENT_ROOT"] . "/files/{$task['house']}";
+        $FILE_DIR = __DIR__ . "/../../files/{$task['house']}";
         $FILE_NAME = "{$task['service']}.xml";
 
         return new Context($task['house'], new Writer($FILE_DIR, $FILE_NAME));

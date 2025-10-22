@@ -1,7 +1,7 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . "/config/app-config.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/utils/base.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/processor/impl/cian-processor.php";
+require_once __DIR__ . "/../../config/app-config.php";
+require_once __DIR__ . "/../../lib/utils/base.php";
+require_once __DIR__ . "/../../lib/processor/impl/cian-processor.php";
 
 /**
  * @var array $config

@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . '/model/exception/database-exception.php';
+require_once __DIR__ . '/../../model/exception/database-exception.php';
 
 class DbConnection {
     private string $hostname;

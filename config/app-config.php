@@ -1,6 +1,6 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . "/model/service.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/model/house.php";
+require_once __DIR__ . "/../model/service.php";
+require_once __DIR__ . "/../model/house.php";
 
 $config = array(
     'hostname'          =>          "localhost",

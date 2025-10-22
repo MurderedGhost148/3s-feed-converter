@@ -1,6 +1,6 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . "/config/app-config.php";
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/db/db-connect.php";
+require_once __DIR__ . "/../../config/app-config.php";
+require_once __DIR__ . "/../../lib/db/db-connect.php";
 
 /**
  * @var array $config
@@ -245,7 +245,7 @@ class Logger {
     private static function log(string $msg, string $level) : void
     {
         $date = date('Y-m-d H:i:s');
-        $path = $_SERVER["DOCUMENT_ROOT"] . "/debug";
+        $path = __DIR__ . "/../../debug";
 
         if(!dir_exists($path)) {
             mkdir($path, 0777, true);

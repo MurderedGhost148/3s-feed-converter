@@ -2,7 +2,7 @@
 
 namespace Processing;
 
-require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/writer.php";
+require_once __DIR__ . "/../../lib/writer.php";
 
 class Context {
     private string $house;
