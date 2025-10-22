@@ -2,8 +2,8 @@
 
 class Writer {
     private string $filePath;
-    private string $started;
 
+    /** @var resource|null */
     private $file = null;
 
     public function __construct(string $path, string $fileName)
@@ -13,27 +13,31 @@ class Writer {
         }
 
         $this->filePath = $path . "/" . $fileName;
-        $this->started = false;
+        register_shutdown_function([$this, 'close']);
     }
 
     public function __destruct()
     {
-        if($this->started && !empty($this->file)) {
-            /** @noinspection PhpParamsInspection */
-            fclose($this->file);
-        }
+        $this->close();
     }
 
-    public function write(string $str)
+    public function write(string $str) : void
     {
         fwrite($this->getFile(), $str);
+    }
+
+    public function close(): void
+    {
+        if (is_resource($this->file)) {
+            fclose($this->file);
+            $this->file = null;
+        }
     }
 
     private function getFile()
     {
         if($this->file == null) {
             $this->file = fopen($this->filePath, 'w');
-            $this->started = true;
         }
 
         return $this->file;

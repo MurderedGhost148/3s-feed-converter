@@ -29,6 +29,7 @@ do {
             }
 
             $processor->run($task);
+            Logger::info("Задача #{$task['id']} выполнена");
         } catch (ProcessException $ex) {
             Logger::error($ex->getMessage());
         }

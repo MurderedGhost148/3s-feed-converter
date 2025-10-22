@@ -59,6 +59,8 @@ $mutators = new MutatorRegistry();
 
     // 4️⃣ Работа с Photos / LayoutPhoto
     $mutators->add(function(DOMDocument $doc) {
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/utils/dom.php";
+
         $xpath = new DOMXPath($doc);
         foreach ($xpath->query('//Photos') as $photosNode) {
             $photoNodes = iterator_to_array($xpath->query('.//PhotoSchema', $photosNode));
@@ -100,17 +102,7 @@ $mutators = new MutatorRegistry();
             }
 
             if ($layoutPhoto) {
-                $layoutPhotoClone = $layoutPhoto->cloneNode(true);
-
-                foreach ($xpath->query('../LayoutPhoto', $photosNode->parentNode) as $old) {
-                    $old->parentNode->removeChild($old);
-                }
-
-                $layoutNode = $doc->createElement('LayoutPhoto');
-                foreach ($layoutPhotoClone->childNodes as $child) {
-                    $layoutNode->appendChild($child->cloneNode(true));
-                }
-                $photosNode->parentNode->appendChild($layoutNode);
+                DomUtils::upsertNode($doc, $photosNode->parentNode, 'LayoutPhoto', null, $layoutPhoto);
             }
 
             while ($photosNode->hasChildNodes()) {

@@ -1,5 +1,6 @@
 <?php
 require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/processor/processor.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/lib/utils/dom.php";
 require_once $_SERVER["DOCUMENT_ROOT"] . "/model/service.php";
 require_once $_SERVER["DOCUMENT_ROOT"] . "/config/mutator-config.php";
 
@@ -27,24 +28,21 @@ class CianProcessor extends Processor {
         $this->write("\n</feed>", $context);
     }
 
+    /**
+     * @throws DOMException
+     */
     protected function processItem(Context $context, $externalId, $type, $xml) : void
     {
         $dom = new DOMDocument('1.0', 'UTF-8');
         $dom->loadXML($xml, LIBXML_NOBLANKS | LIBXML_NOEMPTYTAG);
         $objectNode = $dom->documentElement;
 
-        $externalIdNode = $dom->createElement('ExternalId', htmlspecialchars($externalId));
-        $categoryNode = $dom->createElement('Category', htmlspecialchars($type));
-
-        $objectNode->appendChild($externalIdNode);
-        $objectNode->appendChild($categoryNode);
+        DomUtils::upsertNode($dom, $objectNode, 'ExternalId', $externalId);
+        DomUtils::upsertNode($dom, $objectNode, 'Category', $type);
 
         global $mutators;
         $mutators->apply($dom, $this->getService()->value, $context->getHouse());
 
-        $this->write(
-            str_replace('<?xml version="1.0" encoding="UTF-8"?>', '', $dom->saveXML()),
-            $context
-        );
+        $this->write($dom->saveXML($dom->documentElement), $context);
     }
 }

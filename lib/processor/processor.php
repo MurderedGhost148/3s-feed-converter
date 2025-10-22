@@ -15,16 +15,28 @@ abstract class Processor {
     protected abstract function getService() : Service;
     protected abstract function preProcess(Context $context, $command);
     protected abstract function postProcess(Context $context, $command);
+    /**
+     * @throws Exception
+     */
     protected abstract function processItem(Context $context, $externalId, $type, $xml);
 
     public function run(array $task) : void
     {
         $command = json_decode($task['command'], true);
         $context = $this->buildContext($task);
-        $this->process($context, $command);
+
+        try {
+            $this->process($context, $command);
+        } catch (Exception $ex) {
+            Logger::error("В процессе обработки данных возникла ошибка: {$ex->getMessage()}");
+        }
+
         $this->afterProcess($task);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function process(Context $context, $command) : void
     {
         global $dbUtils;
