@@ -84,8 +84,6 @@ $mutators = new MutatorRegistry();
                 }
             }
 
-            $layoutPhoto = null;
-
             if (!empty($presetImages)) {
                 $lastPreset = array_pop($presetImages);
                 if (count($presetImages) >= 1) {
@@ -97,12 +95,10 @@ $mutators = new MutatorRegistry();
                     }
                 }
                 $layoutPhoto = $lastPreset;
-            } else {
-                $layoutPhoto = end($otherImages);
-            }
 
-            if ($layoutPhoto) {
-                DomUtils::upsertNode($doc, $photosNode->parentNode, 'LayoutPhoto', null, $layoutPhoto);
+                if ($layoutPhoto) {
+                    DomUtils::upsertNode($doc, $photosNode->parentNode, 'LayoutPhoto', null, $layoutPhoto);
+                }
             }
 
             while ($photosNode->hasChildNodes()) {
